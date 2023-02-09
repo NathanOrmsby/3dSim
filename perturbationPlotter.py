@@ -1,8 +1,13 @@
 from matplotlib import pyplot as plt
 import pandas as pd
 
-fname1 = "D:\\3dsim\\singleChaosData\\probe.csv"
-fname2 = "D:\\3dsim\\singleChaosData\\perturbations.csv"
+# Desktop
+# fname1 = "D:\\3dsim\\singleChaosData\\probe.csv"
+# fname2 = "D:\\3dsim\\singleChaosData\\perturbations.csv"
+
+# Laptop
+fname1 = "C:\\Users\\natha\\eclipse-workspace\\3dSim\\singleChaosData\\probe.csv"
+fname2 = "C:\\Users\\natha\\eclipse-workspace\\3dSim\\singleChaosData\\perturbations.csv"
 
 df1 = pd.read_csv(fname1)
 df2 = pd.read_csv(fname2)

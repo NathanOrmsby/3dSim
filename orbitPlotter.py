@@ -2,7 +2,12 @@ import matplotlib
 import os
 import pandas as pd
 
-fname = "D:\\3dsim\data.csv"
+# Desktop
+# fname = "D:\\3dsim\data.csv"
+
+# Laptop
+fname = "C:\\Users\\natha\\eclipse-workspace\\3dSim\\data.csv"
+
 
 df = pd.read_csv(fname)
 print(df.head())

@@ -1,7 +1,11 @@
 from matplotlib import pyplot as plt
 import pandas as pd
 
-fname = "D:\\3dsim\\unitCircle.csv"
+# Desktop
+# fname = "D:\\3dsim\\unitCircle.csv"
+
+# Laptop
+fname = "C:\\Users\\natha\\eclipse-workspace\\3dSim\\unitCircle.csv"
 
 df = pd.read_csv(fname)
 # print(df.head())
