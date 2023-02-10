@@ -37,9 +37,10 @@ typedef struct Probe
 // Declarations
 void calcForce(Planet e, Planet s, double **forces);
 void chaosCalcForce(Planet e, Planet s, Probe jw, double *accels);
+void multiChaosCalcAccel(Planet e, Planet s, Probe *probes, int probeNum, double **accels, int row);
 void rk4(Planet *e, Planet *s, Planet *jw, double dt);
 void chaosRK4(Planet *e, Planet *s, Probe *jw, double dt);
-void multiChaosRK4(Planet *e, Planet *s, Probe *probes, int probeNum, double dt);
+void multiChaosRK4(Planet *e, Planet *s, Probe *probes, int probeNum, double dt, int row);
 void euler(Planet *e, Planet *s, Planet *jw, double dt);
 void chaosEuler(Planet *e, Planet *s, Probe *jw, double dt, int loopCount);
 void multiChaosEuler(Planet *e, Planet *s, Probe *probes, int probeNum, double dt, int loopCount, int row);
@@ -439,6 +440,18 @@ void chaosCalcForce(Planet e, Planet s, Probe jw, double *accels)
 	accels[4] = (gravity31 * r31Unit[1]) + (gravity32 * r32Unit[1]);
 	accels[5] = (gravity31 * r31Unit[2]) + (gravity32 * r32Unit[2]);
 
+	std::cout << "Single chaos calc force" << std::endl;
+	std::cout << "Sun on earth gravity" << std::endl;
+	std::cout << gravity << "Vectors x: " << accels[0] << " y: " << accels[1] << " z: " << accels[2] << std::endl;
+	std::cout << "Sun on probe gravity" << std::endl;
+	std::cout << gravity31 << "Vectors x: " << gravity31 * r31Unit[0] << " y: " << gravity31 * r31Unit[1] << " z: " << gravity31 * r31Unit[2] << std::endl;
+	std::cout << "Earth on probe gravity" << std::endl;
+	std::cout << gravity32 << "Vectors x: " << gravity32 * r32Unit[0] << " y: " << gravity32 * r32Unit[1] << " z: " << gravity32 * r32Unit[2] << std::endl;
+	std::cout << "Earth probe vectors" << std::endl;
+	std::cout << "Unit vector x: " << r32Unit[0] << " y: " << r32Unit[1] << " z: " << r32Unit[2] << std::endl;
+	std::cout << "Net gravity on probe" << std::endl;
+	std::cout << "Vectors x: " << accels[3] << " y: " << accels[4] << " z: " << accels[5] << std::endl;
+
 	// Perturbation Loop
 	for (int i = 0; i < NUMPOINTS; ++i)
 	{
@@ -460,7 +473,7 @@ void chaosCalcForce(Planet e, Planet s, Probe jw, double *accels)
 }
 
 // BROKEN: GIVES WRONG X ACCEL
-void multiChaosCalcAccel(Planet e, Planet s, Probe *probes, int probeNum, double **accels)
+void multiChaosCalcAccel(Planet e, Planet s, Probe *probes, int probeNum, double **accels, int row)
 {
 	double G = 6.6743e-11;
 
@@ -474,9 +487,27 @@ void multiChaosCalcAccel(Planet e, Planet s, Probe *probes, int probeNum, double
 		// Sun on James Webb telescope
 		double r31[2] = {probes[i].x - s.x, probes[i].z - s.z}; double magr31 = sqrt((r31[0] * r31[0]) + (r31[1] * r31[1])); double r31Unit[2] = {r31[0] / magr31, r31[1] / magr31}; double gravity31 = (-1 * G * s.m) / (magr31 * magr31);
 		// Earth on JW
-		double r32[2] = {probes[i].x - e.x, probes[i].z - e.z}; double magr32 = sqrt((r32[0] * r32[0]) + (r32[1] * r32[1])); double r32Unit[2] = {r32[0] / magr32, r32[1] / magr32}; double gravity32 = (-1 * G * e.m) / (magr32 * magr32);
+		double r32[2] = {probes[i].x - e.x, probes[i].z - e.z};
+		double magr32 = sqrt((r32[0] * r32[0]) + (r32[1] * r32[1]));
+		double r32Unit[2] = {r32[0] / magr32, r32[1] / magr32};
+		double gravity32 = (-1 * G * e.m) / (magr32 * magr32);
 		// Net acceleration
 		accels[i + 1][0] = (gravity31 * r31Unit[0]) + (gravity32 * r32Unit[0]); accels[i + 1][1] = (gravity31 * r31Unit[1]) + (gravity32 * r32Unit[1]);
+
+		if (row == 4 && i == 2)
+		{
+			std::cout << "Multi chaos calc force" << std::endl;
+			std::cout << "Sun on earth gravity" << std::endl;
+			std::cout << gravity << "Vectors x: " << accels[0][0] << " y: " << 0.0 << " z: " << accels[0][1] << std::endl;
+			std::cout << "Sun on probe gravity" << std::endl;
+			std::cout << gravity31 << "Vectors x: " << gravity31 * r31Unit[0] << " y: " << 0.0 << " z: " << gravity31 * r31Unit[1] << std::endl;
+			std::cout << "Earth on probe gravity" << std::endl;
+			std::cout << gravity32 << "Vectors x: " << gravity32 * r32Unit[0] << " y: " << 0.0 << " z: " << gravity32 * r32Unit[1] << std::endl;
+			std::cout << "Earth probe vectors" << std::endl;
+			std::cout << "Unit vector x: " << r32Unit[0] << " y: " << 0.0 << " z: " << r32Unit[1] << std::endl;
+			std::cout << "Net gravity on probe" << std::endl;
+			std::cout << "Vectors x: " << accels[i + 1][0] << " y: " << 0.0 << " z: " << accels[i + 1][1] << std::endl << std::endl;
+		}
 
 		// Calc for all perturbations of probe
 		for (int j = 0; j < NUMPOINTS; ++j)
@@ -669,7 +700,7 @@ void chaosEuler(Planet *e, Planet *s, Probe *jw, double dt, int loopCount)
 void multiChaosEuler(Planet *e, Planet *s, Probe *probes, int probeNum, double dt, int loopCount, int row)
 {
 	double **accels = (double **)malloc((1 + probeNum) * sizeof(double *)); accels[0] = (double *)malloc(2 * sizeof(double)); for (int i = 1; i < 1 + probeNum; ++i) { accels[i] = (double *)malloc((2 + 2 * NUMPOINTS) * sizeof(double)); }
-	multiChaosCalcAccel(*e, *s, probes, probeNum, accels);
+	multiChaosCalcAccel(*e, *s, probes, probeNum, accels, row);
 
 	// DEBUGGING
 	if (row == 4)
@@ -812,7 +843,7 @@ void chaosRK4(Planet *e, Planet *s, Probe *jw, double dt)
 	free(k1Accels); free(k2Accels); free(k3Accels); free(k4Accels);
 }
 
-void multiChaosRK4(Planet *e, Planet *s, Probe *probes, int probeNum, double dt)
+void multiChaosRK4(Planet *e, Planet *s, Probe *probes, int probeNum, double dt, int row)
 {
 	// Initialize Planet arrays
 	Planet k2Planets[2], k3Planets[2], k4Planets[2];
@@ -836,16 +867,16 @@ void multiChaosRK4(Planet *e, Planet *s, Probe *probes, int probeNum, double dt)
 	}
 
 	// k1 step
-	multiChaosCalcAccel(*e, *s, probes, probeNum, k1Accels);
+	multiChaosCalcAccel(*e, *s, probes, probeNum, k1Accels, row);
 	// k2 Step
 	rk4StepMultiChaos(&k2Planets[0], k2Probes, *e, probes, probeNum, k1Accels, dt / 2);
-	multiChaosCalcAccel(k2Planets[0], k2Planets[1], k2Probes, probeNum, k2Accels);
+	multiChaosCalcAccel(k2Planets[0], k2Planets[1], k2Probes, probeNum, k2Accels, row);
 	// k3 Step
 	rk4StepMultiChaos(&k3Planets[0], k3Probes, k2Planets[0], k2Probes, probeNum, k2Accels, dt / 2);
-	multiChaosCalcAccel(k3Planets[0], k3Planets[1], k3Probes, probeNum, k3Accels);
+	multiChaosCalcAccel(k3Planets[0], k3Planets[1], k3Probes, probeNum, k3Accels, row);
 	// k4 Step
 	rk4StepMultiChaos(&k4Planets[0], k4Probes, k3Planets[0], k3Probes, probeNum, k3Accels, dt);
-	multiChaosCalcAccel(k4Planets[0], k4Planets[1], k4Probes, probeNum, k4Accels);
+	multiChaosCalcAccel(k4Planets[0], k4Planets[1], k4Probes, probeNum, k4Accels, row);
 	// rk4 Step
 	// Move objects
 	e->vx += (k1Accels[0][0] + 2 * k2Accels[0][0] + 2 * k3Accels[0][0] + k4Accels[0][0]) * dt / 6.0; e->vz += (k1Accels[0][1] + 2 * k2Accels[0][1] + 2 * k3Accels[0][1] + k4Accels[0][1]) * dt / 6.0; e->x += (e->vx + 2 * k2Planets[0].vx + 2 * k3Planets[0].vx + k4Planets[0].vx) * dt / 6.0;  e->z += (e->vz + 2 * k2Planets[0].vz + 2 * k3Planets[0].vz + k4Planets[0].vz) * dt / 6.0;
@@ -1157,3 +1188,4 @@ void copyProbe(Probe *o, Probe i)
 {
 	o->x = i.x; o->y = i.y; o->z = i.z; o->vx = i.vx; o->vy = i.vy; o->vz = i.vz;
 }
+
