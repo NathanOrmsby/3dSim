@@ -413,6 +413,7 @@ void calcForce(Planet e, Planet s, Planet jw, double *forces)
 }
 
 // Calculates accelerations for earth, sun, james webb, and all its perturbations
+// BROKEN: COMPARE WITH MULTI CHAOS
 void chaosCalcForce(Planet e, Planet s, Probe jw, double *accels)
 {
 	double G = 6.6743e-11;
@@ -458,6 +459,7 @@ void chaosCalcForce(Planet e, Planet s, Probe jw, double *accels)
 	}
 }
 
+// BROKEN: GIVES WRONG X ACCEL
 void multiChaosCalcAccel(Planet e, Planet s, Probe *probes, int probeNum, double **accels)
 {
 	double G = 6.6743e-11;
