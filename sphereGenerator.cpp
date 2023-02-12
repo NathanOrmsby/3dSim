@@ -11,7 +11,7 @@
 #include <vector>
 #include <math.h>
 
-#include "sphereGenerator.h"
+#include "..\headers\sphereGenerator.h"
 
 
 void writeSphereToFile(int numPoints, double radius)
